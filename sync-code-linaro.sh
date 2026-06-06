@@ -43,12 +43,16 @@ function command_exists() {
 
 function usage() {
   cat <<EOF
-Usage: $0 [sync-dir]
+Usage: $0 [OPTIONS] [sync-dir]
 
 Initialize and sync the Code Linaro repo manifest.
 
 Arguments:
   sync-dir   Optional destination directory for the repo checkout (default: current directory)
+
+Options:
+  --depth <number>   Shallow clone with the specified depth (passed to repo tool)
+  -h, --help         Show this help message
 
 Environment variables:
   REPO_URL        Override the manifest repo URL
@@ -62,7 +66,30 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
   exit 0
 fi
 
-TARGET_DIR="${1:-.}"
+DEPTH_OPTION=""
+TARGET_DIR="."
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --depth)
+      if [[ -z "${2:-}" ]]; then
+        error "--depth requires a number argument"
+        exit 1
+      fi
+      DEPTH_OPTION="--depth $2"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      TARGET_DIR="$1"
+      shift
+      ;;
+  esac
+done
 
 if ! command_exists repo; then
   error "'repo' tool is not installed or not on PATH."
@@ -79,16 +106,16 @@ cd "$TARGET_DIR"
 
 if [[ -d "$REPO_DIR" && -f "$REPO_DIR/manifest.xml" ]]; then
   info "Repo already initialized in '$TARGET_DIR'. Syncing current manifest..."
-  repo sync -c --no-tags --no-clone-bundle -j$(nproc)
+  repo sync -c --no-tags --no-clone-bundle -j$(nproc) $DEPTH_OPTION
 else
   if [[ -d "$REPO_DIR" ]]; then
     warn ".repo exists but manifest is missing; reinitializing repo manifest."
   else
     info "Initializing repo manifest: $MANIFEST_NAME from branch $MANIFEST_BRANCH"
   fi
-  repo init -u "$MANIFEST_URL" -b "$MANIFEST_BRANCH" -m "$MANIFEST_NAME"
+  repo init -u "$MANIFEST_URL" -b "$MANIFEST_BRANCH" -m "$MANIFEST_NAME" $DEPTH_OPTION
   info "Performing initial repo sync..."
-  repo sync -c --no-tags --no-clone-bundle -j$(nproc)
+  repo sync -c --no-tags --no-clone-bundle -j$(nproc) $DEPTH_OPTION
 fi
 
 success "Code Linaro sync complete in: $(pwd)"
