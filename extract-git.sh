@@ -3,9 +3,34 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+# ANSI color support
+COLOR_RESET="\e[0m"
+COLOR_RED="\e[31m"
+COLOR_GREEN="\e[32m"
+COLOR_YELLOW="\e[33m"
+COLOR_BLUE="\e[34m"
+
 REPO_ROOT="."
 DEST_DIR="./extracted"
 BRANCH=""
+
+function color_echo() {
+  local color="$1"
+  shift
+  printf "%b%s%b\n" "$color" "$*" "$COLOR_RESET"
+}
+
+function info() {
+  color_echo "$COLOR_BLUE" "INFO: $*"
+}
+
+function success() {
+  color_echo "$COLOR_GREEN" "$*"
+}
+
+function warn() {
+  color_echo "$COLOR_YELLOW" "WARNING: $*"
+}
 
 function usage() {
   cat <<EOF
@@ -26,7 +51,7 @@ EOF
 }
 
 function error() {
-  printf "ERROR: %s\n" "$*" >&2
+  color_echo "$COLOR_RED" "ERROR: $*" >&2
   exit 1
 }
 
@@ -64,7 +89,7 @@ if [[ -e "$OUTPUT_DIR" ]]; then
   error "Destination already exists: $OUTPUT_DIR"
 fi
 
-printf 'Extracting project from %s to %s\n' "$BARE_REPO" "$OUTPUT_DIR"
+info "Extracting project from $BARE_REPO to $OUTPUT_DIR"
 
 git clone --no-local "$BARE_REPO" "$OUTPUT_DIR"
 
@@ -72,5 +97,5 @@ if [[ -n "$BRANCH" ]]; then
   git -C "$OUTPUT_DIR" checkout "$BRANCH"
 fi
 
-printf 'Extraction complete: %s\n' "$OUTPUT_DIR"
-printf 'Run: cd %s\n' "$OUTPUT_DIR"
+success "Extraction complete: $OUTPUT_DIR"
+info "Run: cd $OUTPUT_DIR"
