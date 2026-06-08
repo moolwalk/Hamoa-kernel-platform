@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# repo init --depth=1 -c -u https://git.codelinaro.org/clo/private/kernel-platform-5-0/kernelplatform/manifest.git -b release -m AU_LINUX_KERNEL.PLATFORM.5.0.R32.00.00.00.205.015.xml --repo-url=https://git.codelinaro.org/clo/tools/repo.git --repo-branch=aosp-new/stable
+# repo init --depth=1 -c -u https://git.codelinaro.org/clo/la/kernelplatform/manifest.git -b release -m AU_LINUX_KERNEL.PLATFORM.5.0.R32.00.00.00.205.015.xml --repo-url=https://git.codelinaro.org/clo/tools/repo.git --repo-branch=aosp-new/stable
+
 set -euo pipefail
 IFS=$'\n\t'
 
