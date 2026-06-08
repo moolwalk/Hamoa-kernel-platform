@@ -74,6 +74,12 @@ fi
 
 PROJECT_PATH="$1"
 PROJECT_PATH="${PROJECT_PATH%.git}"
+# Normalize project path: remove leading './' sequences, any leading '/', and trailing '/'
+while [[ "$PROJECT_PATH" == ./* ]]; do
+  PROJECT_PATH="${PROJECT_PATH#./}"
+done
+PROJECT_PATH="${PROJECT_PATH#/}"
+PROJECT_PATH="${PROJECT_PATH%/}"
 
 REPO_ROOT="$(realpath "$REPO_ROOT")"
 BARE_REPO="$REPO_ROOT/.repo/projects/$PROJECT_PATH.git"
