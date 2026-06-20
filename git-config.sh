@@ -1,1 +1,1 @@
-git config --global http.followRedirects=true
+git config --global http.followRedirects true
