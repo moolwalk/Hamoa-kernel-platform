@@ -14,7 +14,8 @@ COLOR_YELLOW="\e[33m"
 COLOR_BLUE="\e[34m"
 
 MANIFEST_URL="${MANIFEST_URL:-https://git.codelinaro.org/clo/la/kernelplatform/manifest}"
-MANIFEST_BRANCH="${REPO_BRANCH:-release}"
+MANIFEST_BRANCH="${MANIFEST_BRANCH:-release}"
+REPO_BRANCH="${REPO_BRANCH:-aosp-new/stable}"
 MANIFEST_NAME="${MANIFEST_NAME:-AU_LINUX_KERNEL.PLATFORM.5.0.R32.00.00.00.205.015.xml}"
 REPO_DIR=".repo"
 
@@ -60,6 +61,8 @@ Arguments:
 Options:
   --depth <number>          Shallow clone with the specified depth (passed to repo tool)
   --manifest-url <url>      Specify the manifest repo URL
+  --manifest-branch <name>  Specify the manifest branch (default: release)
+  --repo-branch <name>      Specify the repo branch (default: aosp-new/stable)
   --manifest-name <name>    Specify the manifest file name
   --au-tag-name <name>      Alias for --manifest-name
   -h, --help                Show this help message
@@ -67,7 +70,8 @@ Options:
 Environment variables:
   MANIFEST_URL    Override the manifest repo URL
   REPO_URL        Alias for MANIFEST_URL
-  REPO_BRANCH     Override the manifest branch
+  MANIFEST_BRANCH Override the manifest branch
+  REPO_BRANCH     Override the repo branch
   MANIFEST_NAME   Override the manifest name
   AU_TAG_NAME     Alias for MANIFEST_NAME
   REPO_MANIFEST   Alias for MANIFEST_NAME
@@ -99,6 +103,22 @@ while [[ $# -gt 0 ]]; do
         exit 1
       fi
       MANIFEST_URL="$2"
+      shift 2
+      ;;
+    --manifest-branch)
+      if [[ -z "${2:-}" ]]; then
+        error "--manifest-branch requires a branch name argument"
+        exit 1
+      fi
+      MANIFEST_BRANCH="$2"
+      shift 2
+      ;;
+    --repo-branch)
+      if [[ -z "${2:-}" ]]; then
+        error "--repo-branch requires a branch name argument"
+        exit 1
+      fi
+      REPO_BRANCH="$2"
       shift 2
       ;;
     --manifest-name|--au-tag-name)
@@ -138,7 +158,7 @@ else
   else
     info "Initializing repo manifest: $MANIFEST_NAME from branch $MANIFEST_BRANCH"
   fi
-  repo init -u "$MANIFEST_URL" -b "$MANIFEST_BRANCH" -m "$MANIFEST_NAME" $DEPTH_OPTION
+  repo init -u "$MANIFEST_URL" -b "$MANIFEST_BRANCH" -m "$MANIFEST_NAME" $DEPTH_OPTION --repo-branch "$REPO_BRANCH"
   info "Performing initial repo sync..."
   repo sync -c --no-tags --no-clone-bundle -j$(nproc) $DEPTH_OPTION
 fi
